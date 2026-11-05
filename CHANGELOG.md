@@ -6,6 +6,7 @@
 
 - **Plugin-list metadata** — `locale/en.json` and `locale/zh.json` carry the localized title and description the DSH plugin list shows, the same convention dsh-web-guard uses.
 - **Guard-path E2E** — `test/e2e-guard.mjs` walks browser → dsh-web-guard → DSH and asserts byte-range streaming (`206` + `Content-Range`) survives the auth proxy.
+- **npm distribution** — the package is published as `@lvxianchao/dsh-video-preview`; pushing a `v*` tag now publishes it with provenance and cuts the GitHub release from CI.
 
 ### Docs
 

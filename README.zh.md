@@ -21,10 +21,17 @@ DSH 自带的文档预览只注册了文本、PDF、Excel 和图片——**没�
 ## 安装
 
 ```bash
+# npm
+dsh plugin --profile web add @lvxianchao/dsh-video-preview
+
+# 从 GitHub 安装
 dsh plugin --profile web add "github:lvxianchao/dsh-video-preview"
+
+# 从本地目录安装
+dsh plugin --profile web add /path/to/dsh-video-preview
 ```
 
-`main` 只放已发布的代码，所以这条命令装到的就是最新稳定版。装完重启 `dsh`（Web UI 在启动时重载前端模块）：
+`main` 只放已发布的代码，所以两种远程装法拿到的都是最新稳定版。装完重启 `dsh`（Web UI 在启动时重载前端模块）：
 
 ```bash
 sudo systemctl restart dsh-web   # 按你的部署方式替换

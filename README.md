@@ -21,10 +21,17 @@ DSH's built-in document preview registers text, PDF, Excel and images. **Video i
 ## Install
 
 ```bash
+# npm
+dsh plugin --profile web add @lvxianchao/dsh-video-preview
+
+# from GitHub
 dsh plugin --profile web add "github:lvxianchao/dsh-video-preview"
+
+# from a local checkout
+dsh plugin --profile web add /path/to/dsh-video-preview
 ```
 
-`main` only ever carries released code, so this installs the latest stable release. Then restart `dsh` (the Web UI reloads its frontend modules on boot):
+`main` only ever carries released code, so both remote forms install the latest stable release. Then restart `dsh` (the Web UI reloads its frontend modules on boot):
 
 ```bash
 sudo systemctl restart dsh-web   # adapt to your deployment
