@@ -1,0 +1,7 @@
+- 影子实例的覆盖层：只挂本地 video-preview，不碰正式 profile
+# 用法：
+#   DSH_HOME=/tmp/dsh-test-home dsh --profile web --patch ./test/shadow.patch.yml \
+#     --host 127.0.0.1 --port 3199 --no-open
+- insert:
+    - id: video-preview
+      name: '<absolute path to this package>/lib/index.js'

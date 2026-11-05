@@ -1,0 +1,10 @@
+# Bundle patch: mounted automatically when this package is installed as a
+# profile bundle (`dsh plugin --profile web add @lvxianchao/dsh-video-preview`).
+#
+# The row exists only so the package appears in the harness Loader; the browser
+# half is discovered from `dsh.client` in package.json and mounted into the Web
+# UI. Anything set in the profile's own patch file still wins, because profile
+# patches are applied after bundle patches.
+- insert:
+    - id: video-preview
+      name: '@lvxianchao/dsh-video-preview'
