@@ -1,0 +1,11 @@
+# Shadow overlay for test/e2e-guard.mjs: puts dsh-web-guard on its own port with
+# a known password, so the test can walk the production path
+# (browser → guard → DSH) without touching a live profile.
+#
+# Local test fixture only — never use this password on a real deployment.
+- id: guard
+  config:
+    listenHost: '127.0.0.1'
+    listenPort: 3181
+    password: 'test-password-123'
+    sessionDays: 1

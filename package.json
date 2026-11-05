@@ -1,6 +1,6 @@
 {
   "name": "@lvxianchao/dsh-video-preview",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Streaming video preview for the DeepSeek Harness Web UI: click an mp4/webm/mov in the file sidebar and it plays in place over an authenticated byte-range route — seeking and large files included, no build step, zero runtime dependencies.",
   "type": "module",
   "main": "lib/index.js",
@@ -13,10 +13,12 @@
       "types": "./lib/client.d.ts",
       "default": "./lib/client.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*": "./locale/*"
   },
   "files": [
     "lib",
+    "locale",
     "cordis.patch.yml",
     "README.md",
     "README.zh.md",

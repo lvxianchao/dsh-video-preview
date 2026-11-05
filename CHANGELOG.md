@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0 — 2026-11-05
+
+### Added
+
+- **Plugin-list metadata** — `locale/en.json` and `locale/zh.json` carry the localized title and description the DSH plugin list shows, the same convention dsh-web-guard uses.
+- **Guard-path E2E** — `test/e2e-guard.mjs` walks browser → dsh-web-guard → DSH and asserts byte-range streaming (`206` + `Content-Range`) survives the auth proxy.
+
+### Docs
+
+- The Related section now points at **dsh-web-guard** (renamed from `dsh-guard`), with its npm install command.
+
 ## 1.0.0 — 2026-11-05
 
 First stable release. A streaming video preview for the DSH Web UI sidebar.

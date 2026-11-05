@@ -90,7 +90,11 @@ window.__ModuleLoader__.load({ id: "@lvxianchao/dsh-video-preview", factory: (re
 
 ## 相关插件
 
-[dsh-guard](https://github.com/lvxianchao/dsh-guard) —— 同一作者的 DSH Web UI 密码闸门：一个登录口令、反代 `/api` 403 修复、启动 token 兑换。本插件只改变"文件怎么预览"，不改变"谁能进来"：如果这个 UI 不只是回环访问，请在它前面放 dsh-guard。
+[dsh-web-guard](https://github.com/lvxianchao/dsh-web-guard) —— 同一作者的 DSH Web UI 密码登录：让它能安全地开放到外网，凭密码从任何地方访问，不再依赖每次重启都会变的临时 token，反向代理的兼容问题也已处理好。本插件只改变"文件怎么预览"，不改变"谁能进来"：如果这个 UI 不只是回环访问，请在它前面放 dsh-web-guard。
+
+```bash
+dsh plugin --profile web add @lvxianchao/dsh-web-guard
+```
 
 ## 开发
 
@@ -111,6 +115,8 @@ DSH_HOME=/tmp/dsh-test-home dsh --profile web \
 ```
 
 `test/shadow.patch.yml` 把插件按路径插进影子实例；`test/e2e.mjs` 用无头 Chrome 走"@ 引用 → 点开 → 断言 `<video>` 在播放、路由返回 206 Range、并且能把一个超过旧 32 MB 上限的文件拖到接近结尾"；`test/record-demo.mjs` 用同一条流程录制 `docs/demo.gif`（需要 `puppeteer-core` 和 Chrome）。
+
+要验证经过鉴权闸门的流式路径（也就是生产拓扑），把 [dsh-web-guard](https://github.com/lvxianchao/dsh-web-guard) 装进同一个影子 profile，用 `test/guard.patch.yml` 启动，再跑 `test/e2e-guard.mjs`：它会登录、打开视频，并断言 `206` + `Content-Range` 穿过代理后依然正常。
 
 ## 赞助
 

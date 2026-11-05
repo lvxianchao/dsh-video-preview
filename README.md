@@ -90,7 +90,11 @@ window.__ModuleLoader__.load({ id: "@lvxianchao/dsh-video-preview", factory: (re
 
 ## Related
 
-[dsh-guard](https://github.com/lvxianchao/dsh-guard) — the same author's password gate for the DSH Web UI: one login, the reverse-proxy `/api` 403 fix, and the launch-token exchange. This plugin only changes how files preview, not who can open them: if the UI is reachable beyond loopback, put dsh-guard in front of it.
+[dsh-web-guard](https://github.com/lvxianchao/dsh-web-guard) — the same author's password login for the DSH Web UI, so it can be exposed on the internet: sign in from anywhere instead of chasing one-off tokens, with reverse-proxy quirks handled. This plugin only changes how files preview, not who can open them: if the UI is reachable beyond loopback, put dsh-web-guard in front of it.
+
+```bash
+dsh plugin --profile web add @lvxianchao/dsh-web-guard
+```
 
 ## Development
 
@@ -111,6 +115,8 @@ DSH_HOME=/tmp/dsh-test-home dsh --profile web \
 ```
 
 `test/shadow.patch.yml` mounts the plugin by path. `test/e2e.mjs` drives headless Chrome through "@ reference → click → assert the `<video>` plays, serves 206 ranges, and can seek near the end of a file bigger than the old 32 MB cap". `test/record-demo.mjs` records `docs/demo.gif` from the same flow (needs `puppeteer-core` and a Chrome binary).
+
+To verify the streaming path through the auth gate — the production topology — install [dsh-web-guard](https://github.com/lvxianchao/dsh-web-guard) into the same shadow profile, boot it with `test/guard.patch.yml`, and run `test/e2e-guard.mjs`: it signs in, opens a video, and asserts `206` + `Content-Range` still arrive through the proxy.
 
 ## Sponsor
 

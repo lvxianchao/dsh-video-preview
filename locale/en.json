@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "DSH Video Preview",
+    "description": "Play mp4/webm/mov files in the sidebar: a streaming video renderer with byte-range seeking and no size cap."
+  }
+}

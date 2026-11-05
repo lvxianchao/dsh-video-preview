@@ -1,5 +1,6 @@
 node_modules/
+node_modules
 .hyperframes/
 *.log
-node_modules
 test/e2e-result.png
+test/e2e-guard-result.png
