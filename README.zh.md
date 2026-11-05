@@ -1,5 +1,11 @@
 # dsh-video-preview
 
+[![npm 版本](https://img.shields.io/npm/v/@lvxianchao/dsh-video-preview?color=0ab887)](https://www.npmjs.com/package/@lvxianchao/dsh-video-preview)
+[![MIT 许可证](https://img.shields.io/npm/l/@lvxianchao/dsh-video-preview)](LICENSE)
+[![Node.js >= 22.19](https://img.shields.io/node/v/@lvxianchao/dsh-video-preview)](https://nodejs.org/en/about/previous-releases)
+![零运行时依赖](https://img.shields.io/badge/runtime_dependencies-0-brightgreen)
+[![DeepSeek Harness 插件](https://img.shields.io/badge/DeepSeek_Harness-plugin-0e7490)](https://github.com/deepseek-ai/deepseek-harness)
+
 给 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）Web UI 的侧边栏加一个**视频预览器**：文件树 / `@` 引用 / 工区变更里点开 `.mp4`、`.webm`、`.mov`，直接就地播放，不再落到"该格式文件暂时无法预览"。
 
 DSH 自带的文档预览只注册了文本、PDF、Excel 和图片——**没有视频**。这个插件补上这一格：`mp4` / `m4v` / `webm` / `ogv` / `ogg` / `mov`。

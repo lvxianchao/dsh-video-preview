@@ -1,5 +1,11 @@
 # dsh-video-preview
 
+[![npm version](https://img.shields.io/npm/v/@lvxianchao/dsh-video-preview?color=0ab887)](https://www.npmjs.com/package/@lvxianchao/dsh-video-preview)
+[![MIT license](https://img.shields.io/npm/l/@lvxianchao/dsh-video-preview)](LICENSE)
+[![Node.js >= 22.19](https://img.shields.io/node/v/@lvxianchao/dsh-video-preview)](https://nodejs.org/en/about/previous-releases)
+![zero runtime dependencies](https://img.shields.io/badge/runtime_dependencies-0-brightgreen)
+[![DeepSeek Harness plugin](https://img.shields.io/badge/DeepSeek_Harness-plugin-0e7490)](https://github.com/deepseek-ai/deepseek-harness)
+
 A **video preview** for the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) Web UI sidebar. Click an `.mp4`, `.webm` or `.mov` in the file tree, an `@` reference, or the workspace-changes list, and it plays in place — instead of "preview is not available for this file type yet".
 
 DSH's built-in document preview registers text, PDF, Excel and images. **Video is not one of them.** This plugin adds that renderer: `mp4` / `m4v` / `webm` / `ogv` / `ogg` / `mov`.
