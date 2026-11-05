@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.1 — 2026-11-05
+
+### Added
+
+- **`funding` metadata** — npm now links the sponsor options (Afdian / Ko-fi) from the package page, matching the README's Sponsor section.
+
+### Packaging
+
+- First release published by CI through the npm **trusted publisher** (OIDC, provenance), which also validates that configuration.
+
 ## 1.1.0 — 2026-11-05
 
 ### Added
