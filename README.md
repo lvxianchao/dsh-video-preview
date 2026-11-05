@@ -4,7 +4,7 @@ A **video preview** for the [DeepSeek Harness](https://github.com/deepseek-ai/de
 
 DSH's built-in document preview registers text, PDF, Excel and images. **Video is not one of them.** This plugin adds that renderer: `mp4` / `m4v` / `webm` / `ogv` / `ogg` / `mov`.
 
-![Click an mp4 in the sidebar and it plays in place](docs/demo.gif)
+![Click an mp4 in the sidebar and it plays in place](https://raw.githubusercontent.com/lvxianchao/dsh-video-preview/main/docs/demo.gif)
 
 > 中文说明：[README.zh.md](README.zh.md)
 

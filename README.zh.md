@@ -4,7 +4,7 @@
 
 DSH 自带的文档预览只注册了文本、PDF、Excel 和图片——**没有视频**。这个插件补上这一格：`mp4` / `m4v` / `webm` / `ogv` / `ogg` / `mov`。
 
-![在侧边栏点开 mp4，就地播放](docs/demo.gif)
+![在侧边栏点开 mp4，就地播放](https://raw.githubusercontent.com/lvxianchao/dsh-video-preview/main/docs/demo.gif)
 
 > English: [README.md](README.md)
 

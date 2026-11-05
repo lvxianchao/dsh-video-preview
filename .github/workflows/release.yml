@@ -1,0 +1,57 @@
+name: Release to npm
+
+# Tag-driven: pushing a v* tag publishes that exact version with provenance.
+# Authentication is OIDC (trusted publisher) — no NPM_TOKEN secret anywhere.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write # create the GitHub release
+  id-token: write # required for the OIDC token exchange
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      # Trusted publishing requires npm >= 11.5.0; the runner image ships older.
+      - name: Use latest npm
+        run: npm install -g npm@latest
+
+      # A tag that disagrees with package.json would either republish an
+      # existing version (409) or, worse, ship a version nobody tagged.
+      - name: Tag must match package.json
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          echo "tag=$tag package.json=$pkg"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag $tag does not match package.json version $pkg"
+            exit 1
+          fi
+
+      # Zero runtime dependencies and no build step, so nothing to install first.
+      - name: Publish
+        run: npm publish --provenance --access public
+
+      # A git tag is not a GitHub release: without this the Releases page keeps
+      # showing whatever was created by hand last.
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "release $GITHUB_REF_NAME already exists, leaving it alone"
+            exit 0
+          fi
+          ver="${GITHUB_REF_NAME#v}"
+          awk -v v="## $ver" 'index($0,v)==1{f=1;next} /^## /{f=0} f' CHANGELOG.md > /tmp/notes.md
+          if [ ! -s /tmp/notes.md ]; then echo "Release $ver" > /tmp/notes.md; fi
+          gh release create "$GITHUB_REF_NAME" --title "v$ver" --notes-file /tmp/notes.md
