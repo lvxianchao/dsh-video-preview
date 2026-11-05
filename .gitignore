@@ -1,3 +1,4 @@
 node_modules/
 .hyperframes/
 *.log
+test/e2e-result.png
