@@ -4,14 +4,14 @@
 
 DSH 自带的文档预览只注册了文本、PDF、Excel 和图片——**没有视频**。这个插件补上这一格：`mp4` / `m4v` / `webm` / `ogv` / `ogg` / `mov`。
 
-![视频预览在 DSH 右侧栏播放](docs/screenshot.png)
+![在侧边栏点开 mp4，就地播放](docs/demo.gif)
 
 > English: [README.md](README.md)
 
 ## 特性
 
 - **点开即播**：按后缀匹配渲染器，从带鉴权的宿主路由流式取流，不经过第三方服务。
-- **真·流式（v0.2）**：`<video>` 直接打字节范围路由（`206 Partial Content`），**拖动进度条即时响应，文件大小没有完整读取上限**——5 GB 的片子也只消耗你实际看的那部分字节。
+- **真·流式**：`<video>` 直接打字节范围路由（`206 Partial Content`），**拖动进度条即时响应，文件大小没有完整读取上限**——5 GB 的片子也只消耗你实际看的那部分字节。
 - **静音自动播放**：浏览器不允许有声自动播放，所以先静音起播，控制条里一键开声音。
 - **基础信息**：文件名、容器格式、体积（来自 stat 路由）。
 - **失败可读**：编码/封装不受支持时给出明确提示，而不是空白播放器。
@@ -21,14 +21,10 @@ DSH 自带的文档预览只注册了文本、PDF、Excel 和图片——**没�
 ## 安装
 
 ```bash
-# 从本地目录安装
-dsh plugin --profile web add /path/to/dsh-video-preview
-
-# 从 GitHub 安装，锁定 release —— 推荐
-dsh plugin --profile web add "github:lvxianchao/dsh-video-preview#v0.2.0"
+dsh plugin --profile web add "github:lvxianchao/dsh-video-preview"
 ```
 
-装完重启 `dsh`（Web UI 在启动时重载前端模块）：
+`main` 只放已发布的代码，所以这条命令装到的就是最新稳定版。装完重启 `dsh`（Web UI 在启动时重载前端模块）：
 
 ```bash
 sudo systemctl restart dsh-web   # 按你的部署方式替换
@@ -92,20 +88,48 @@ dsh --profile web --patch ./dev.yml --host 127.0.0.1 --port 3099 --no-open
 window.__ModuleLoader__.load({ id: "@lvxianchao/dsh-video-preview", factory: (require) => { /* … */ } });
 ```
 
+## 相关插件
+
+[dsh-guard](https://github.com/lvxianchao/dsh-guard) —— 同一作者的 DSH Web UI 密码闸门：一个登录口令、反代 `/api` 403 修复、启动 token 兑换。本插件只改变"文件怎么预览"，不改变"谁能进来"：如果这个 UI 不只是回环访问，请在它前面放 dsh-guard。
+
 ## 开发
 
+`main` 是发布分支，只放已发布并打过 tag 的代码；日常开发在 `dev` 分支，确认发版时才合并回 `main`。
+
 ```bash
-# 影子实例：独立 DSH_HOME，不碰线上 profile 与数据
+git checkout dev
+# … 修改、提交、测试 …
+git checkout main && git merge --ff-only dev
+git tag -a vX.Y.Z && git push origin main --tags
+```
+
+影子实例（独立 `DSH_HOME`，不碰线上 profile 与数据）：
+
+```bash
 DSH_HOME=/tmp/dsh-test-home dsh --profile web \
   --patch ./test/shadow.patch.yml --host 127.0.0.1 --port 3199 --no-open
 ```
 
-`test/shadow.patch.yml` 把插件按路径插进影子实例；`test/e2e.mjs` 用无头 Chrome 走"@ 引用 → 点开 → 断言 `<video>` 在播放、路由返回 206 Range、并且能把一个超过旧 32 MB 上限的文件拖到接近结尾"。
+`test/shadow.patch.yml` 把插件按路径插进影子实例；`test/e2e.mjs` 用无头 Chrome 走"@ 引用 → 点开 → 断言 `<video>` 在播放、路由返回 206 Range、并且能把一个超过旧 32 MB 上限的文件拖到接近结尾"；`test/record-demo.mjs` 用同一条流程录制 `docs/demo.gif`（需要 `puppeteer-core` 和 Chrome）。
+
+## 赞助
+
+如果这个插件帮你省了时间，欢迎请我喝杯咖啡：
+
+- ☕ **[爱发电](https://afdian.com/a/lvxianchao)** — 国内，微信 / 支付宝
+- 🌍 **[Ko-fi](https://ko-fi.com/lvxianchao)** — 海外，PayPal
+
+<details>
+<summary>微信赞赏码</summary>
+
+<p align="center"><img src="https://raw.githubusercontent.com/lvxianchao/dsh-video-preview/main/docs/wechat.jpg" width="220" alt="微信赞赏码"></p>
+
+</details>
 
 ## 变更记录
 
-- **v0.2.0** — 流式：字节范围宿主路由（`/api/video-preview.stream`、`/api/video-preview.stat`）、渲染器自有加载、无完整文件大小上限、`rangeBytes` 配置。
-- **v0.1.0** — 首个版本：Blob 播放完整字节（受平台 32 MB 上限约束）。
+- **1.0.0** — 首个稳定版：字节范围流式宿主路由、渲染器自有加载、无完整文件大小上限、`rangeBytes` 配置。
+- **0.1.0** — 预览版：Blob 播放完整字节（受平台 32 MB 上限约束）。
 
 ## License
 

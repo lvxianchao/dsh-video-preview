@@ -4,14 +4,14 @@ A **video preview** for the [DeepSeek Harness](https://github.com/deepseek-ai/de
 
 DSH's built-in document preview registers text, PDF, Excel and images. **Video is not one of them.** This plugin adds that renderer: `mp4` / `m4v` / `webm` / `ogv` / `ogg` / `mov`.
 
-![Video playing in the DSH sidebar](docs/screenshot.png)
+![Click an mp4 in the sidebar and it plays in place](docs/demo.gif)
 
 > 中文说明：[README.zh.md](README.zh.md)
 
 ## Features
 
 - **Click and play** — suffix-matched renderer that streams the file from an authenticated host route.
-- **True streaming (v0.2)** — the `<video>` element talks to a byte-range route (`206 Partial Content`), so **seeking is instant and file size has no complete-read cap**: a 5 GB video costs only the bytes you actually watch.
+- **True streaming** — the `<video>` element talks to a byte-range route (`206 Partial Content`), so **seeking is instant and file size has no complete-read cap**: a 5 GB video costs only the bytes you actually watch.
 - **Muted autoplay** — browsers refuse audible autoplay, so the preview starts silently; the native controls unmute in one click.
 - **Useful metadata** — filename, container format, size (from a stat route).
 - **Readable failures** — an unsupported codec or container says so instead of showing a blank player.
@@ -21,14 +21,10 @@ DSH's built-in document preview registers text, PDF, Excel and images. **Video i
 ## Install
 
 ```bash
-# from a local checkout
-dsh plugin --profile web add /path/to/dsh-video-preview
-
-# from GitHub, pinned to a release — recommended
-dsh plugin --profile web add "github:lvxianchao/dsh-video-preview#v0.2.0"
+dsh plugin --profile web add "github:lvxianchao/dsh-video-preview"
 ```
 
-Restart `dsh` afterwards (the Web UI reloads its frontend modules on boot):
+`main` only ever carries released code, so this installs the latest stable release. Then restart `dsh` (the Web UI reloads its frontend modules on boot):
 
 ```bash
 sudo systemctl restart dsh-web   # adapt to your deployment
@@ -92,20 +88,48 @@ The browser half needs no build step — it is a module in the host loader's own
 window.__ModuleLoader__.load({ id: "@lvxianchao/dsh-video-preview", factory: (require) => { /* … */ } });
 ```
 
+## Related
+
+[dsh-guard](https://github.com/lvxianchao/dsh-guard) — the same author's password gate for the DSH Web UI: one login, the reverse-proxy `/api` 403 fix, and the launch-token exchange. This plugin only changes how files preview, not who can open them: if the UI is reachable beyond loopback, put dsh-guard in front of it.
+
 ## Development
 
+`main` is the release branch: it only carries code that has been released and tagged. Day-to-day work happens on `dev` and lands on `main` when a release is cut.
+
 ```bash
-# shadow instance: isolated DSH_HOME, never touches the live profile or its data
+git checkout dev
+# … change, commit, test …
+git checkout main && git merge --ff-only dev
+git tag -a vX.Y.Z && git push origin main --tags
+```
+
+Shadow instance (isolated `DSH_HOME`, never touches a live profile or its data):
+
+```bash
 DSH_HOME=/tmp/dsh-test-home dsh --profile web \
   --patch ./test/shadow.patch.yml --host 127.0.0.1 --port 3199 --no-open
 ```
 
-`test/shadow.patch.yml` mounts the plugin by path; `test/e2e.mjs` drives headless Chrome through "@ reference → click → assert the `<video>` plays, serves 206 ranges, and can seek near the end of a file bigger than the old 32 MB cap".
+`test/shadow.patch.yml` mounts the plugin by path. `test/e2e.mjs` drives headless Chrome through "@ reference → click → assert the `<video>` plays, serves 206 ranges, and can seek near the end of a file bigger than the old 32 MB cap". `test/record-demo.mjs` records `docs/demo.gif` from the same flow (needs `puppeteer-core` and a Chrome binary).
+
+## Sponsor
+
+If this plugin saved you some time, a coffee is welcome:
+
+- ☕ **[Afdian](https://afdian.com/a/lvxianchao)** — mainland China, WeChat / Alipay
+- 🌍 **[Ko-fi](https://ko-fi.com/lvxianchao)** — international, PayPal
+
+<details>
+<summary>WeChat tip QR</summary>
+
+<p align="center"><img src="https://raw.githubusercontent.com/lvxianchao/dsh-video-preview/main/docs/wechat.jpg" width="220" alt="WeChat tip QR"></p>
+
+</details>
 
 ## Changelog
 
-- **v0.2.0** — streaming: byte-range host routes (`/api/video-preview.stream`, `/api/video-preview.stat`), renderer-owned loading, no complete-file size cap, `rangeBytes` config.
-- **v0.1.0** — first release: Blob-based playback of complete bytes (32 MB platform cap applied).
+- **1.0.0** — first stable release: streaming byte-range host routes, renderer-owned loading, no complete-file size cap, `rangeBytes` config.
+- **0.1.0** — preview: Blob-based playback of complete bytes (32 MB platform cap applied).
 
 ## License
 
