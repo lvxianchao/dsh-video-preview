@@ -10,12 +10,13 @@ DSH 自带的文档预览只注册了文本、PDF、Excel 和图片——**没�
 
 ## 特性
 
-- **点开即播**：按后缀匹配渲染器，读取完整字节后本地 Blob 播放，不经过第三方服务。
+- **点开即播**：按后缀匹配渲染器，从带鉴权的宿主路由流式取流，不经过第三方服务。
+- **真·流式（v0.2）**：`<video>` 直接打字节范围路由（`206 Partial Content`），**拖动进度条即时响应，文件大小没有完整读取上限**——5 GB 的片子也只消耗你实际看的那部分字节。
 - **静音自动播放**：浏览器不允许有声自动播放，所以先静音起播，控制条里一键开声音。
-- **基础信息**：文件名、容器格式、体积。
+- **基础信息**：文件名、容器格式、体积（来自 stat 路由）。
 - **失败可读**：编码/封装不受支持时给出明确提示，而不是空白播放器。
-- **零运行时依赖**：只用 React（宿主提供）和标准浏览器 API；**没有构建步骤**，浏览器半是手写的 `__ModuleLoader__` 模块。
-- **不碰宿主代码**：只通过公开服务 `documentPreviews` / `slots` / `locale` 注册，和 dsh 升级解耦。
+- **零运行时依赖**：React 由宿主提供，其余全是标准 Node/浏览器 API；**没有构建步骤**，浏览器半是手写的 `__ModuleLoader__` 模块。
+- **不碰宿主代码**：浏览器半只走公开服务 `documentPreviews` / `slots` / `locale`；宿主半通过 `connection.fetch` 注册路由，和其他 `/api` 路由一样位于浏览器鉴权栅栏之后。
 
 ## 安装
 
@@ -24,10 +25,10 @@ DSH 自带的文档预览只注册了文本、PDF、Excel 和图片——**没�
 dsh plugin --profile web add /path/to/dsh-video-preview
 
 # 从 GitHub 安装，锁定 release —— 推荐
-dsh plugin --profile web add "github:lvxianchao/dsh-video-preview#v0.1.0"
+dsh plugin --profile web add "github:lvxianchao/dsh-video-preview#v0.2.0"
 ```
 
-装完重启 `dsh`（Web UI 需要重新载入前端模块）：
+装完重启 `dsh`（Web UI 在启动时重载前端模块）：
 
 ```bash
 sudo systemctl restart dsh-web   # 按你的部署方式替换
@@ -52,25 +53,38 @@ dsh --profile web --patch ./dev.yml --host 127.0.0.1 --port 3099 --no-open
 
 1. 在会话里输入 `@`，选一个视频文件（或从工区变更列表里点开）。
 2. 点击文件引用，右侧预览栏出现播放器，静音自动播放。
-3. 控制条里拖进度、开声音、全屏。
+3. 控制条里拖进度、开声音、全屏；拖动只拉取新位置附近的字节。
 
-## 限制（都是宿主侧的现实约束，不是隐藏问题）
+## 配置
+
+| 键 | 默认值 | 含义 |
+|---|---|---|
+| `rangeBytes` | `2097152`（2 MiB） | 单次流请求返回的字节窗口。浏览器按需连续发 Range，所以这只是延迟/吞吐调节钮，不是大小限制。 |
+
+```yaml
+# ~/.dsh/profiles/web/cordis.patch.yml
+- id: video-preview
+  config:
+    rangeBytes: 4194304   # 4 MiB 窗口
+```
+
+## 限制
 
 | 限制 | 原因 | 怎么办 |
 |---|---|---|
-| 单个文件有大小上限（默认 32 MB） | 预览走 `workspaceFiles` 的**完整字节**读取，`maxFileBytes` 默认 32 MB | 在 profile 里调大 `workspace-files` 行的 `maxFileBytes` |
 | 不支持 `mkv` | Chrome 解不了 Matroska | 转成 mp4/webm |
 | 编码受限 | 浏览器只认平台自带解码器；HEVC/AV1 等看平台 | 用 H.264/AAC 的 mp4 最稳 |
-| 整文件读入内存 | 没有走 Range 流式请求（v0.1 的取舍） | 大文件建议先压一版预览 |
-
-> 想彻底解决大小与流式问题，下一步可以把宿主半做成一个带鉴权的 Range 路由，让 `<video>` 直接吃 HTTP 流；v0.1 先用完整字节换取"零宿主依赖"。
+| 会话必须可解析 | 流路由按文件地址里的会话解析文件 | 从活跃会话预览总是可解析；会话消失则 404 |
+| 仅限已鉴权浏览器 | 路由和其他 `/api` 一样在鉴权栅栏之后 | 这正是设计目的——绝无未鉴权的文件出口 |
 
 ## 实现
 
 | 半 | 文件 | 职责 |
 |---|---|---|
-| 宿主 | `lib/index.js` | 空 `apply`，只让插件出现在 Loader / 冻结打包，`dsh tui`、`dsh headless` 下无副作用 |
-| 浏览器 | `lib/client.js` | 注册字典 → 注册渲染器元数据 → 注册键控文档体；渲染 `<video>`，管理 Blob URL 生命周期 |
+| 宿主 | `lib/index.js` | 在 `connection.fetch` 上注册 `GET/HEAD /api/video-preview.stream`（经 `workspaceFiles.readBytes(range)` 出字节，`206` + `Content-Range`）和 `GET /api/video-preview.stat`（size/version/type） |
+| 浏览器 | `lib/client.js` | 注册渲染器元数据（`loading: "renderer"`）与键控文档体；渲染 `<video src=…>` 直连流路由，并上报加载版本 |
+
+渲染器用的是 `loading: "renderer"`——预览框架因此**永远不会**对视频文件做完整字节读取，平台那 32 MB 的完整文件上限就从视频路径上消失了。
 
 浏览器半没有构建步骤，直接是宿主加载器的模块格式：
 
@@ -78,31 +92,20 @@ dsh --profile web --patch ./dev.yml --host 127.0.0.1 --port 3099 --no-open
 window.__ModuleLoader__.load({ id: "@lvxianchao/dsh-video-preview", factory: (require) => { /* … */ } });
 ```
 
-注册核心（节选）：
-
-```js
-ctx.documentPreviews.register({
-  id: VIDEO_BODY_ID,
-  extensions: ["mp4", "m4v", "webm", "ogv", "ogg", "mov"],
-  binaryExtensions: ["mp4", "m4v", "webm", "ogv", "ogg", "mov"],
-  priority: "extension",
-  title: () => t("title"),
-  loading: "bytes-complete",
-  wrap: false
-});
-
-ctx.slots.register({ name: "sidebar.right.tab.document", key: VIDEO_BODY_ID, locale: "sidebarVideo" }, VideoBody);
-```
-
 ## 开发
 
 ```bash
-# 影子实例：用独立 DSH_HOME，不碰线上 profile 与数据
+# 影子实例：独立 DSH_HOME，不碰线上 profile 与数据
 DSH_HOME=/tmp/dsh-test-home dsh --profile web \
   --patch ./test/shadow.patch.yml --host 127.0.0.1 --port 3199 --no-open
 ```
 
-`test/shadow.patch.yml` 把插件按路径插进影子实例，`test/e2e.mjs` 用无头 Chrome 走一遍"@ 引用 → 点开 → 断言 `<video>` 在播放"。
+`test/shadow.patch.yml` 把插件按路径插进影子实例；`test/e2e.mjs` 用无头 Chrome 走"@ 引用 → 点开 → 断言 `<video>` 在播放、路由返回 206 Range、并且能把一个超过旧 32 MB 上限的文件拖到接近结尾"。
+
+## 变更记录
+
+- **v0.2.0** — 流式：字节范围宿主路由（`/api/video-preview.stream`、`/api/video-preview.stat`）、渲染器自有加载、无完整文件大小上限、`rangeBytes` 配置。
+- **v0.1.0** — 首个版本：Blob 播放完整字节（受平台 32 MB 上限约束）。
 
 ## License
 

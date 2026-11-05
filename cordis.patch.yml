@@ -1,10 +1,14 @@
 # Bundle patch: mounted automatically when this package is installed as a
 # profile bundle (`dsh plugin --profile web add @lvxianchao/dsh-video-preview`).
 #
-# The row exists only so the package appears in the harness Loader; the browser
-# half is discovered from `dsh.client` in package.json and mounted into the Web
-# UI. Anything set in the profile's own patch file still wins, because profile
+# The row carries the plugin into the harness Loader; the browser half is
+# discovered from `dsh.client` in package.json and mounted into the Web UI.
+# Anything set in the profile's own patch file still wins, because profile
 # patches are applied after bundle patches.
 - insert:
     - id: video-preview
       name: '@lvxianchao/dsh-video-preview'
+      # Optional config (defaults shown):
+      # config:
+      #   rangeBytes: 2097152   # per-request stream window, clamped by the
+      #                         # workspaceFiles backend cap (maxBytes, 2 MB)
